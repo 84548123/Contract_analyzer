@@ -7,7 +7,7 @@ import os
 import logging
 import uuid
 
-import fitz  # PyMuPDF
+import pymupdf as fitz
 import uvicorn
 import gradio as gr
 from fastapi import FastAPI, UploadFile, File, HTTPException

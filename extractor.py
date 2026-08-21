@@ -44,11 +44,13 @@ def extract_clauses(
 
         text = clean_text(text)
         chunks = chunk_text(text, chunk_size=400, overlap=100)
-
+        total_chunks = len(chunks)
+        print(f"      Analyzing {total_chunks} text chunks with BART-large model...")
         for chunk_idx, chunk in enumerate(chunks):
             if len(chunk.split()) < 10:
                 continue
 
+            print(f"      -> Processing chunk {chunk_idx + 1}/{total_chunks}...", end="\r", flush=True)
             classifications = classifier.classify(chunk, threshold=threshold)
 
             for cls in classifications:

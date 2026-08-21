@@ -7,7 +7,7 @@ import re
 import logging
 from typing import List
 
-import fitz  # PyMuPDF
+import pymupdf as fitz
 
 logger = logging.getLogger(__name__)
 
