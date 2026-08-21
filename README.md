@@ -1,94 +1,91 @@
-# 📄 Contract Clause Extraction & Analysis Engine
+# 📄 ContractIQ — AI Legal Intelligence Engine
 
-> AI-powered legal contract analysis with clause extraction, NLP-based Q&A, risk scoring, and executive summarization — deployed on GCP Cloud Run.
+> AI-powered legal contract analysis with zero-shot clause extraction, RoBERTa extractive Q&A, risk scoring, executive summarization, and a modern React + Tailwind UI — ready for GCP Cloud Run deployment.
 
 ---
 
-## 🚀 Overview
-
-Contract review is one of the most time-consuming and expensive tasks in legal and business workflows. This system automates the extraction, analysis, and querying of legal clauses from commercial contracts using state-of-the-art NLP models.
-
-### Key Capabilities
+## 🚀 Key Features
 
 | Feature | Description |
-|:--------|:------------|
-| **Clause Extraction** | Zero-shot classification across 30 legal clause categories using BART-MNLI |
-| **Question Answering** | Extractive QA with RoBERTa — ask natural language questions about any contract |
-| **Risk Analysis** | 12+ risk rules with severity levels (Critical/High/Medium/Low), scoring (0-100), and letter grades (A-F) |
-| **Summarization** | Hierarchical contract summarization using BART-CNN |
-| **Interactive UI** | Tabbed Gradio interface with clause browser, risk dashboard, Q&A chat, and summary view |
-| **REST API** | FastAPI endpoints for programmatic access |
+|:---|:---|
+| **🎨 Modern React UI** | Split-screen legal dashboard with document explorer, search, and responsive layout |
+| **🔍 Clause Extraction** | Zero-shot classification across 30 legal categories using `BART-MNLI` |
+| **💬 Extractive Q&A** | Natural language queries with exact source evidence citations using `RoBERTa-SQuAD2` |
+| **⚠️ Risk Matrix** | 12+ risk rules with severity levels (Critical/High/Medium/Low), risk score (0–100), and letter grade (A–F) |
+| **📝 Summarization** | Hierarchical document summarization using `BART-CNN` |
+| **📥 Audit Export** | One-click export to formatted Markdown audit report |
+| **⚡ REST API** | FastAPI backend with OpenAPI Swagger documentation at `/docs` |
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                   GCP Cloud Run                     │
-│  ┌───────────────────────────────────────────────┐  │
-│  │              FastAPI (main.py)                 │  │
-│  │  ┌─────────┐  ┌──────────────────────────┐   │  │
-│  │  │ /health │  │  / → Gradio App            │   │  │
-│  │  └─────────┘  │  (Tabs: Extract, QA,      │   │  │
-│  │  ┌─────────┐  │   Risk, Summary)          │   │  │
-│  │  │/api/*   │  └──────────────────────────┘   │  │
-│  │  └────┬────┘                                  │  │
-│  │       │                                       │  │
-│  │  ┌────▼──────────────────────────────────┐   │  │
-│  │  │           NLP Pipeline                 │   │  │
-│  │  │  preprocess → classifier → extractor   │   │  │
-│  │  │  qa_engine    risk_engine  summarizer   │   │  │
-│  │  └────────────────────────────────────────┘   │  │
-│  │       │                                       │  │
-│  │  ┌────▼──────────────────────────────────┐   │  │
-│  │  │        HuggingFace Models              │   │  │
-│  │  │  bart-large-mnli (classification)      │   │  │
-│  │  │  roberta-base-squad2 (QA)              │   │  │
-│  │  │  bart-large-cnn (summarization)        │   │  │
-│  │  └────────────────────────────────────────┘   │  │
-│  └───────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                    GCP Cloud Run                        │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │               FastAPI (main.py)                   │  │
+│  │  ┌──────────┐  ┌───────────────────────────────┐  │  │
+│  │  │  /health │  │  / → React + Tailwind SPA     │  │  │
+│  │  ├──────────┤  │      (Split-Screen Dashboard) │  │  │
+│  │  │  /api/*  │  └───────────────────────────────┘  │  │
+│  │  └────┬─────┘                                     │  │
+│  │       │                                           │  │
+│  │  ┌────▼──────────────────────────────────────┐    │  │
+│  │  │            NLP Pipelines                  │    │  │
+│  │  │  preprocess ──► classifier ──► extractor  │    │  │
+│  │  │  qa_engine     risk_engine    summarizer  │    │  │
+│  │  └───────────────────────────────────────────┘    │  │
+│  │       │                                           │  │
+│  │  ┌────▼──────────────────────────────────────┐    │  │
+│  │  │        Hugging Face Transformer Models    │    │  │
+│  │  │  - facebook/bart-large-mnli (Zero-Shot)   │    │  │
+│  │  │  - deepset/roberta-base-squad2 (QA)       │    │  │
+│  │  │  - facebook/bart-large-cnn (Summary)      │    │  │
+│  │  └───────────────────────────────────────────┘    │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🧰 Tech Stack
-
-| Component | Technology |
-|:----------|:-----------|
-| Language | Python 3.11 |
-| NLP Models | HuggingFace Transformers (BART-MNLI, RoBERTa-SQuAD2, BART-CNN) |
-| Backend | FastAPI + Uvicorn |
-| Frontend | Gradio 4.x |
-| PDF Processing | PyMuPDF (fitz) |
-| Search | scikit-learn TF-IDF |
-| Container | Docker |
-| Deployment | GCP Cloud Run |
-| Dataset | CUAD (Contract Understanding Atticus Dataset) |
-
----
-
-## 📁 Project Structure
+## 📁 Clean Project Structure
 
 ```
 contract_analyzer/
-├── main.py                    # FastAPI app + Gradio mount (entrypoint)
-├── gradio_app.py              # Gradio UI (tabbed interface)
-├── preprocess.py              # PDF extraction, cleaning, chunking
-├── classifier.py              # Zero-shot clause classification
-├── extractor.py               # Clause extraction orchestration
-├── qa_engine.py               # Extractive QA with RoBERTa
-├── risk_engine.py             # Risk analysis with scoring
-├── summarizer.py              # Contract summarization
-├── cuad_test.py               # CUAD benchmark evaluation
-├── category_descriptions.csv  # 41 CUAD clause category definitions
-├── requirements.txt           # Python dependencies
-├── Dockerfile                 # Container build with model pre-download
-├── deploy.sh                  # One-command GCP deployment script
-├── cloudbuild.yaml            # GCP Cloud Build config
+├── main.py                    # FastAPI application & static React server
+├── preprocess.py              # PDF parsing, cleaning & sliding-window chunking
+├── classifier.py              # Zero-shot clause classification pipeline
+├── extractor.py               # Clause extraction & confidence aggregation
+├── qa_engine.py               # RoBERTa extractive QA + TF-IDF retrieval
+├── risk_engine.py             # 12+ risk rules, severity scoring & letter grading
+├── summarizer.py              # BART-CNN contract summarization
+├── quick_test.py              # Fast end-to-end test script (<10s)
+├── category_descriptions.csv  # 41 CUAD legal clause definitions
+├── requirements.txt           # Python backend dependencies
+├── Dockerfile                 # Multi-stage Docker build (Node.js + Python)
+├── deploy.sh                  # One-command GCP Cloud Run deployment
+├── cloudbuild.yaml            # GCP Cloud Build configuration
 ├── .dockerignore
 ├── .gcloudignore
+├── .gitignore
+├── frontend/                  # React 18 + Tailwind CSS + Lucide Icons SPA
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   ├── src/
+│   │   ├── App.jsx            # Main dashboard coordinator
+│   │   └── components/
+│   │       ├── Header.jsx
+│   │       ├── FileUpload.jsx
+│   │       ├── DocumentViewer.jsx
+│   │       ├── OverviewTab.jsx
+│   │       ├── RiskDashboard.jsx
+│   │       ├── ClauseExplorer.jsx
+│   │       ├── ChatAssistant.jsx
+│   │       ├── RiskGauge.jsx
+│   │       └── ExportModal.jsx
+│   └── dist/                  # Pre-built production bundle
 └── tests/
     ├── test_preprocess.py
     ├── test_classifier.py
@@ -97,121 +94,43 @@ contract_analyzer/
 
 ---
 
-## ⚙️ Local Setup
+## ⚙️ Quick Start
 
+### 1. Local Run
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/contract-clause-analyzer.git
-cd contract-clause-analyzer
-
-# Install dependencies
+# Install backend dependencies
 pip install -r requirements.txt
 
-# Run the application
+# Start the application
 python main.py
 ```
-
-The app will be available at `http://localhost:8080`
+Open **`http://localhost:8080`** in your browser.
 
 ---
 
-## 🐳 Docker
-
+### 2. Fast Pipeline Test
 ```bash
-# Build
-docker build -t contract-analyzer .
-
-# Run
-docker run -p 8080:8080 contract-analyzer
+python quick_test.py
 ```
 
 ---
 
-## ☁️ Deploy to GCP Cloud Run
-
-### Prerequisites
-- GCP account with billing enabled
-- `gcloud` CLI installed and authenticated
-- Docker installed (optional, for local testing)
-
-### Deploy
-
+### 3. Deploy to GCP Cloud Run
 ```bash
-# Authenticate
-gcloud auth login
-gcloud config set project YOUR_PROJECT_ID
-
-# One-command deploy
 chmod +x deploy.sh
 ./deploy.sh YOUR_PROJECT_ID us-central1
 ```
 
-The script will:
-1. Enable required GCP APIs
-2. Create an Artifact Registry repository
-3. Build the container via Cloud Build
-4. Deploy to Cloud Run with optimized settings (4Gi RAM, 2 CPUs)
-
-### Cloud Run Configuration
-
-| Setting | Value |
-|:--------|:------|
-| Memory | 4Gi |
-| CPU | 2 |
-| Min Instances | 0 (scale to zero) |
-| Max Instances | 3 |
-| Concurrency | 1 |
-| Timeout | 300s |
-| Port | 8080 |
-
 ---
 
-## 🔌 API Endpoints
+## 🔌 API Reference
 
 | Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| `GET` | `/health` | Health check |
-| `POST` | `/api/analyze` | Upload PDF → full analysis (clauses, risks, summary) |
-| `POST` | `/api/ask` | Ask a question about a previously analyzed contract |
-| `GET` | `/docs` | Interactive API documentation (Swagger) |
-
-### Example: Analyze a Contract
-
-```bash
-curl -X POST http://localhost:8080/api/analyze \
-  -F "file=@contract.pdf"
-```
-
-### Example: Ask a Question
-
-```bash
-curl -X POST http://localhost:8080/api/ask \
-  -H "Content-Type: application/json" \
-  -d '{"contract_id": "abc12345", "question": "What is the governing law?"}'
-```
-
----
-
-## 🧪 Testing
-
-```bash
-# Run unit tests
-python -m pytest tests/ -v
-
-# Run CUAD benchmark (requires CUADv1.json)
-python cuad_test.py
-```
-
----
-
-## 📊 Dataset
-
-**CUAD (Contract Understanding Atticus Dataset)**
-- 510 real-world contracts
-- 13,000+ annotations
-- 41 clause categories
-
-Source: https://huggingface.co/datasets/theatticusproject/cuad-qa
+|:---|:---|:---|
+| `GET` | `/health` | Health check endpoint |
+| `POST` | `/api/analyze` | Upload contract PDF for full analysis |
+| `POST` | `/api/ask` | Natural language question against analyzed contract |
+| `GET` | `/docs` | Interactive Swagger API documentation |
 
 ---
 

@@ -9,9 +9,10 @@ import uuid
 
 import pymupdf as fitz
 import uvicorn
-import gradio as gr
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from preprocess import chunk_text
@@ -120,10 +121,7 @@ async def ask_question_api(req: QuestionRequest):
     return engine.answer(req.question, data["chunks"], data["clauses"])
 
 
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-
-# Check if modern React frontend is built
+# Serve modern React frontend
 dist_dir = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 assets_dir = os.path.join(dist_dir, "assets")
 
@@ -135,16 +133,8 @@ if os.path.exists(dist_dir):
     async def serve_spa():
         return FileResponse(os.path.join(dist_dir, "index.html"))
 
-# Mount Gradio UI at /gradio as optional secondary UI
-try:
-    from gradio_app import create_gradio_app
-    gradio_ui = create_gradio_app()
-    app = gr.mount_gradio_app(api, gradio_ui, path="/gradio")
-except Exception as e:
-    logger.warning(f"Could not mount Gradio UI: {e}")
-    app = api
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     logger.info(f"Starting ContractIQ on port {port}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(api, host="0.0.0.0", port=port)
