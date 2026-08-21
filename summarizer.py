@@ -29,11 +29,18 @@ class ContractSummarizer:
             return text
 
         try:
-            truncated = ' '.join(text.split()[:900])
+            words = text.split()
+            input_len = len(words)
+            truncated = ' '.join(words[:900])
+            
+            # Dynamically clamp max_length if input is short
+            effective_max = min(max_length, max(20, input_len - 5))
+            effective_min = min(min_length, max(5, effective_max // 2))
+
             result = self._summarizer(
                 truncated,
-                max_length=max_length,
-                min_length=min_length,
+                max_length=effective_max,
+                min_length=effective_min,
                 do_sample=False
             )
             return result[0]["summary_text"]
