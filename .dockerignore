@@ -1,0 +1,14 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.env
+.venv
+venv
+tests/
+CUADv1.json
+*.pdf
+.gcloudignore
+cloudbuild.yaml
