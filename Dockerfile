@@ -1,6 +1,16 @@
+# ================= Stage 1: Build React Frontend =================
+FROM node:20-slim AS frontend-builder
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci || npm install
+
+COPY frontend/ ./
+RUN npm run build
+
+# ================= Stage 2: Python Application =================
 FROM python:3.11-slim
 
-# Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV TRANSFORMERS_CACHE=/app/models
@@ -24,6 +34,9 @@ RUN python -c "from transformers import pipeline; pipeline('summarization', mode
 
 # Copy application code
 COPY . .
+
+# Copy built React frontend from Stage 1
+COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
 # Create non-root user
 RUN useradd -m appuser && chown -R appuser:appuser /app

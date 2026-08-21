@@ -120,14 +120,31 @@ async def ask_question_api(req: QuestionRequest):
     return engine.answer(req.question, data["chunks"], data["clauses"])
 
 
-# --- Mount Gradio UI ---
-from gradio_app import create_gradio_app
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
-gradio_ui = create_gradio_app()
-app = gr.mount_gradio_app(api, gradio_ui, path="/")
+# Check if modern React frontend is built
+dist_dir = os.path.join(os.path.dirname(__file__), "frontend", "dist")
+assets_dir = os.path.join(dist_dir, "assets")
 
+if os.path.exists(assets_dir):
+    api.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+if os.path.exists(dist_dir):
+    @api.get("/")
+    async def serve_spa():
+        return FileResponse(os.path.join(dist_dir, "index.html"))
+
+# Mount Gradio UI at /gradio as optional secondary UI
+try:
+    from gradio_app import create_gradio_app
+    gradio_ui = create_gradio_app()
+    app = gr.mount_gradio_app(api, gradio_ui, path="/gradio")
+except Exception as e:
+    logger.warning(f"Could not mount Gradio UI: {e}")
+    app = api
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    logger.info(f"Starting Contract Analyzer on port {port}")
+    logger.info(f"Starting ContractIQ on port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)

@@ -12,3 +12,5 @@ CUADv1.json
 *.pdf
 .gcloudignore
 cloudbuild.yaml
+frontend/node_modules
+frontend/.vite

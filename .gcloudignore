@@ -8,3 +8,5 @@ venv
 tests/
 CUADv1.json
 *.pdf
+frontend/node_modules
+frontend/.vite
